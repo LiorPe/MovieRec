@@ -5,8 +5,47 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MovieRec"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="1000" Width="1200" WindowState="Maximized">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.1*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="0.5*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.1*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="0.1*"/>
+        </Grid.ColumnDefinitions>
+        <Label Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="10" VerticalAlignment="Center" HorizontalAlignment="Center">Movies rcommendation system</Label>
+        <TextBox x:Name="searchTxtBx" Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="6" TextChanged="UpdateAutoComplete"/>
+        <Button x:Name="searchBtn" Grid.Column="8" Grid.ColumnSpan="2" Grid.Row="3" Margin="5,0,5,0" Click="GetRecommendationsClick">Recommend me</Button>
+        <ListBox x:Name="autoCompleteListBx" Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="6" Grid.RowSpan="3"  DisplayMemberPath="Title" SelectionChanged="AutoCompleteSelection" />
+        <Label x:Name="resultsTitleLbl" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="10" HorizontalAlignment="Left">People who liked _____ also liked the following movies:</Label>
+        <DataGrid Name="recommendationsDatagrid" AutoGenerateColumns="False" Grid.Row="8"  Grid.Column="1" Grid.ColumnSpan="8" >
+            <DataGrid.Columns>
+
+                <DataGridTextColumn Header="Rank" Binding="{Binding Rank}" Width="*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="3*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Genres" Binding="{Binding Genres}" Width="2*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Score" Binding="{Binding Score}" Width="*" IsReadOnly="True"/>
+
+
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </Window>

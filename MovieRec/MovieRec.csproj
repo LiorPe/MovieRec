@@ -63,6 +63,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Data\DataCookie.cs" />
     <Compile Include="Data\MovieRecommendation.cs" />
     <Compile Include="Model\IModel.cs" />
     <Compile Include="MainWindow.xaml.cs">

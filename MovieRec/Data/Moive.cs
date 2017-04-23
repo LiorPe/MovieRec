@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
+using System;
+
 
 namespace MovieRec.Data
 {
+    [Serializable]
     public class Movie
     {
         public int ID { get;}

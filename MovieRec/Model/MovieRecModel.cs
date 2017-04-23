@@ -1,30 +1,51 @@
 ﻿using MovieRec.Data;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace MovieRec
 {
-    public class MovieRecModel : IModel
+    public class MovieRecModel : IModel , INotifyPropertyChanged
     {
+        int totalRecords = 27279 + 1048576;
+        int currentRecord=0;
         Dictionary<int, Dictionary<int, double>> _ranksOfMovivesByUsers;
-        Dictionary<int, Dictionary<int, double>> _ranksOfUsersToMovies;
-        Dictionary<int,Movie> _allMovies;
+        Dictionary<int, Movie> _allMovies;
+        public event PropertyChangedEventHandler PropertyChanged;
+        string _status;
+        public string Status
+        {
+            get { return _status; }
+            set
+            {
+                if (_status != value)
+                {
+                    _status = value;
+                    NotifyPropertyChanged("Status");
+                }
+            }
+        }
+        public MovieRecModel(PropertyChangedEventHandler PropertyChanged)
+        {
+            this.PropertyChanged = PropertyChanged;
+        }
 
-
-        public MovieRecModel()
+        internal void LoadDataSet()
         {
             readMoviesFile();
-           // readRatingsFiles();
+            readRatingsFiles();
         }
 
         private void readRatingsFiles()
         {
             using (var rd = new StreamReader("ratings.csv"))
             {
-                _ranksOfMovivesByUsers = new Dictionary<int, Dictionary<int, double>>();
-                _ranksOfUsersToMovies = new Dictionary<int, Dictionary<int, double>>();
+                   _ranksOfMovivesByUsers = new Dictionary<int, Dictionary<int, double>>();
                 var splits = rd.ReadLine().Split(',');
                 while (!rd.EndOfStream)
                 {
@@ -33,11 +54,12 @@ namespace MovieRec
                     int movieId = Convert.ToInt32(splits[1]);
                     double rank = Convert.ToDouble(splits[2]);
                     AddRating(_ranksOfMovivesByUsers, movieId, userId, rank);
-                    //AddRank(_ranksOfUsersToMovies, userId, movieId, rank);
-
+                    Status = String.Format("Loading dataset ({0:0.0}%)", 5 * (double)currentRecord/totalRecords);
+                    currentRecord++;
                 }
             }
         }
+
 
         private static void AddRating(Dictionary<int, Dictionary<int, double>> ranks , int key, int subKey, double rating)
         {
@@ -61,7 +83,11 @@ namespace MovieRec
                     movieName = splits[1];
                     for (int i = 2; i < splits.Length - 1; i++)
                         movieName += "," + splits[i];
+                    if (movieName[0] == '\"' && movieName[movieName.Length - 1] == '\"')
+                        movieName = movieName.Substring(1, movieName.Length - 2);
                      _allMovies[movieId] =  new Movie(movieId, movieName, splits[splits.Length-1]);
+                    Status = String.Format("Loading dataset ({0:0.0}%)", 5*(double)currentRecord / totalRecords);
+                    currentRecord++;
                 }
             }
         }
@@ -70,10 +96,15 @@ namespace MovieRec
         {
             int movieId = _selectedMovie.ID;
             Dictionary<int, double> similarityResults = new Dictionary<int, double>();
-            foreach (int otherMovieId in _allMovies.Keys )
+            int length = _allMovies.Count;
+            for (int i=0;i< _allMovies.Count; i++  )
             {
+                int otherMovieId = _allMovies.Keys.ElementAt(i);
                 if (movieId != otherMovieId)
                     similarityResults[otherMovieId] = CalculteSimilarity(movieId, otherMovieId);
+                Status = String.Format("Searching similar movies ({0:0.0}%)", (double)100*i / length);
+
+
             }
             int amountOfResults = Math.Min(1000, similarityResults.Count);
 
@@ -154,6 +185,13 @@ namespace MovieRec
         public List<Movie> GetAllMoviesExist()
         {
             return new List <Movie>(_allMovies.Values);
+        }
+
+
+        public void NotifyPropertyChanged(string propName)
+        {
+            if (this.PropertyChanged != null)
+                this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
         }
     }
 }

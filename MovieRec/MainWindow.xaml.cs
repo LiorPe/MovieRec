@@ -3,6 +3,7 @@ using MovieRec.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
 namespace MovieRec
 {
     /// <summary>
@@ -23,22 +23,54 @@ namespace MovieRec
     /// </summary>
     public partial class MainWindow : Window
     {
-        IModel _model;
+        MovieRecModel _model;
         List<Movie> _allMovies;
         ObservableCollection<Movie> _moviesAutouComplete;
         ObservableCollection<MovieRecommendation> _moviesRecommendations;
-
+        BackgroundWorker worker;
+        bool processingQuery = false;
         Movie _selectedMovie = null;
         bool _autoComplete = false;
         public MainWindow()
         {
             InitializeComponent();
-            _model = new MovieRecModel();
-            _allMovies = _model.GetAllMoviesExist();
+            searchTxtBx.Visibility = Visibility.Hidden;
+            searchBtn.Visibility = Visibility.Hidden;
             autoCompleteListBx.Visibility = Visibility.Hidden;
             resultsTitleLbl.Visibility = Visibility.Hidden;
             recommendationsDatagrid.Visibility = Visibility.Hidden;
 
+            worker = new BackgroundWorker();
+            worker.WorkerReportsProgress = true;
+            worker.DoWork += BegningLoad;
+            worker.RunWorkerCompleted += LoadCompleted;
+            worker.RunWorkerAsync();
+
+
+        }
+
+        private void LoadCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            searchTxtBx.Visibility = Visibility.Visible;
+            searchBtn.Visibility = Visibility.Visible;
+            loadStatusLbl.Visibility = Visibility.Hidden;
+        }
+
+        private void BegningLoad(object sender, DoWorkEventArgs e)
+        {
+            _model = new MovieRecModel(statusChanged);
+            _model.LoadDataSet();
+            _allMovies = _model.GetAllMoviesExist();
+
+        }
+
+        private void statusChanged(object sender, PropertyChangedEventArgs e)
+        {
+
+            this.Dispatcher.Invoke(() =>
+            {
+                loadStatusLbl.Content = _model.Status;
+            });
         }
 
         private void UpdateAutoComplete(object sender, TextChangedEventArgs e)
@@ -48,7 +80,12 @@ namespace MovieRec
                 _autoComplete = false;
                 return;
             }
-                 
+            if (processingQuery)
+            {
+                MessageBox.Show("BE PATIENT! I`m still running your previous query.");
+                return;
+            }
+
             string input = searchTxtBx.Text.ToLower();
             if (String.IsNullOrWhiteSpace(input) || input.Length<2)
             {
@@ -102,16 +139,42 @@ namespace MovieRec
                 MessageBox.Show("Movie title was not recognized, please choose a moive title from the suggestion box.");
                 return;
             }
+            if (processingQuery)
+            {
+                MessageBox.Show("BE PATIENT! I`m still running your previous query.");
+                return;
+            }
             else
             {
+
                 autoCompleteListBx.Visibility = Visibility.Hidden;
-                _moviesRecommendations = new ObservableCollection<MovieRecommendation>(_model.GetRecommendationsForMovie(_selectedMovie));
-                resultsTitleLbl.Content = String.Format("People who liked '{0}' also liked:", _selectedMovie.Title);
-                recommendationsDatagrid.ItemsSource = _moviesRecommendations;
-                resultsTitleLbl.Visibility = Visibility.Visible;
-                recommendationsDatagrid.Visibility = Visibility.Visible;
+                loadStatusLbl.Visibility = Visibility.Visible;
+                worker = new BackgroundWorker();
+                worker.WorkerReportsProgress = true;
+                worker.DoWork += SearchResults;
+                worker.RunWorkerCompleted += SearchCompleted;
+                worker.RunWorkerAsync();
+
+
+
             }
 
+        }
+
+        private void SearchCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            processingQuery = false;
+            resultsTitleLbl.Content = String.Format("People who liked '{0}' also liked:", _selectedMovie.Title);
+            recommendationsDatagrid.ItemsSource = _moviesRecommendations;
+            resultsTitleLbl.Visibility = Visibility.Visible;
+            recommendationsDatagrid.Visibility = Visibility.Visible;
+            loadStatusLbl.Visibility = Visibility.Hidden;
+        }
+
+        private void SearchResults(object sender, DoWorkEventArgs e)
+        {
+            processingQuery = true;
+            _moviesRecommendations = new ObservableCollection<MovieRecommendation>(_model.GetRecommendationsForMovie(_selectedMovie));
         }
 
         private void AutoCompleteSelection(object sender, MouseButtonEventArgs e)

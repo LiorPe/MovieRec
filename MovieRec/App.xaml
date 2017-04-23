@@ -4,6 +4,54 @@
              xmlns:local="clr-namespace:MovieRec"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+
+        <Style x:Key="title" TargetType="{x:Type Label}">
+            <Setter Property="FontSize" Value="60" />
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontFamily" Value="Lucida Sans Italic"/>
+
+            <Setter Property="Margin" Value="8,8,8,8"/>
+        </Style>
+        <Style TargetType="{x:Type Label}">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="8,8,8,8"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="IsEditable" Value="True"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="8,8,8,8"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="Background" Value="Orange"/>
+            <Setter Property="BorderThickness" Value="3"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        <Style TargetType="ListBox">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="FontSize" Value="18"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="Blue"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
     </Application.Resources>
 </Application>
